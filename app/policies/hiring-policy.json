@@ -1,0 +1,65 @@
+{
+  "policies": [
+    {
+      "hash": "hiring-v1",
+      "ref": {
+        "namespace": "startup-ops/prod",
+        "decision_type": "hiring_approval",
+        "version": "1.0.0"
+      },
+      "policy": {
+        "policy_id": "hiring-policy-v1",
+        "namespace": "startup-ops/prod",
+        "decision_type": "hiring_approval",
+        "input_schema": {
+          "team_size": { "kind": "int" },
+          "approved_headcount": { "kind": "int" },
+          "salary_band": { "kind": "int" },
+          "role_priority": { "kind": "int" }
+        },
+        "rules": [
+          {
+            "id": "high_salary",
+            "when": {
+              "field": "salary_band",
+              "op": ">",
+              "value": 150000
+            },
+            "then": {
+              "outcome": "ESCALATE",
+              "reason": "Salary band exceeds $150,000 — requires founder approval"
+            }
+          },
+          {
+            "id": "nice_to_have_role",
+            "when": {
+              "field": "role_priority",
+              "op": "==",
+              "value": 3
+            },
+            "then": {
+              "outcome": "ESCALATE",
+              "reason": "Nice-to-have role — requires founder review before hiring"
+            }
+          },
+          {
+            "id": "critical_role",
+            "when": {
+              "field": "role_priority",
+              "op": "==",
+              "value": 1
+            },
+            "then": {
+              "outcome": "APPROVE",
+              "reason": "Critical role — approved for immediate hiring"
+            }
+          }
+        ],
+        "default": {
+          "outcome": "APPROVE",
+          "reason": "Hiring request meets policy criteria — approved with standard conditions"
+        }
+      }
+    }
+  ]
+}

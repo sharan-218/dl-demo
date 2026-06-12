@@ -1,0 +1,53 @@
+{
+  "policies": [
+    {
+      "hash": "vendor-v1",
+      "ref": {
+        "namespace": "startup-ops/prod",
+        "decision_type": "vendor_approval",
+        "version": "1.0.0"
+      },
+      "policy": {
+        "policy_id": "vendor-policy-v1",
+        "namespace": "startup-ops/prod",
+        "decision_type": "vendor_approval",
+        "input_schema": {
+          "vendor_risk_score": { "kind": "int" },
+          "contract_value": { "kind": "int" },
+          "vendor_type": { "kind": "int" }
+        },
+        "rules": [
+          {
+            "id": "high_risk",
+            "when": {
+              "field": "vendor_risk_score",
+              "op": ">",
+              "value": 70
+            },
+            "then": {
+              "outcome": "DENY",
+              "reason": "Vendor risk score exceeds 70 — too high to approve"
+            }
+          },
+          {
+            "id": "medium_risk_high_value",
+            "when": {
+              "all": [
+                { "field": "vendor_risk_score", "op": ">", "value": 50 },
+                { "field": "contract_value", "op": ">", "value": 20000 }
+              ]
+            },
+            "then": {
+              "outcome": "ESCALATE",
+              "reason": "Medium-risk vendor with contract over $20k requires founder review"
+            }
+          }
+        ],
+        "default": {
+          "outcome": "APPROVE",
+          "reason": "Vendor meets risk and contract criteria"
+        }
+      }
+    }
+  ]
+}

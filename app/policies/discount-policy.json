@@ -1,0 +1,108 @@
+{
+  "policies": [
+    {
+      "hash": "discount-v1",
+      "ref": {
+        "namespace": "startup-ops/prod",
+        "decision_type": "discount_approval",
+        "version": "1.0.0"
+      },
+      "policy": {
+        "policy_id": "discount-policy-v1",
+        "namespace": "startup-ops/prod",
+        "decision_type": "discount_approval",
+        "input_schema": {
+          "customer_tier": { "kind": "int" },
+          "contract_value": { "kind": "int" },
+          "requested_discount": { "kind": "int" },
+          "previous_discounts": { "kind": "int" }
+        },
+        "rules": [
+          {
+            "id": "enterprise_high_value",
+            "when": {
+              "all": [
+                { "field": "customer_tier", "op": "==", "value": 3 },
+                { "field": "contract_value", "op": ">", "value": 50000 },
+                { "field": "requested_discount", "op": ">", "value": 30 }
+              ]
+            },
+            "then": {
+              "outcome": "DENY",
+              "reason": "Enterprise customers with contracts over $50k are limited to 30% discount"
+            }
+          },
+          {
+            "id": "enterprise_moderate",
+            "when": {
+              "all": [
+                { "field": "customer_tier", "op": "==", "value": 3 },
+                { "field": "requested_discount", "op": ">", "value": 30 }
+              ]
+            },
+            "then": {
+              "outcome": "DENY",
+              "reason": "Enterprise customer discount exceeds 30% maximum"
+            }
+          },
+          {
+            "id": "growth_high_value",
+            "when": {
+              "all": [
+                { "field": "customer_tier", "op": "==", "value": 2 },
+                { "field": "contract_value", "op": ">", "value": 20000 },
+                { "field": "requested_discount", "op": ">", "value": 25 }
+              ]
+            },
+            "then": {
+              "outcome": "DENY",
+              "reason": "Growth customers with contracts over $20k are limited to 25% discount"
+            }
+          },
+          {
+            "id": "growth_standard",
+            "when": {
+              "all": [
+                { "field": "customer_tier", "op": "==", "value": 2 },
+                { "field": "requested_discount", "op": ">", "value": 25 }
+              ]
+            },
+            "then": {
+              "outcome": "DENY",
+              "reason": "Growth customer discount exceeds 25% maximum"
+            }
+          },
+          {
+            "id": "startup_limit",
+            "when": {
+              "all": [
+                { "field": "customer_tier", "op": "==", "value": 1 },
+                { "field": "requested_discount", "op": ">", "value": 15 }
+              ]
+            },
+            "then": {
+              "outcome": "DENY",
+              "reason": "Startup customer discount exceeds 15% maximum"
+            }
+          },
+          {
+            "id": "repeat_discount_escalate",
+            "when": {
+              "field": "previous_discounts",
+              "op": ">",
+              "value": 2
+            },
+            "then": {
+              "outcome": "ESCALATE",
+              "reason": "Customer has received more than 2 previous discounts — requires founder review"
+            }
+          }
+        ],
+        "default": {
+          "outcome": "APPROVE",
+          "reason": "Discount request is within policy limits"
+        }
+      }
+    }
+  ]
+}

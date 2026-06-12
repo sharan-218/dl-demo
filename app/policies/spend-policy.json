@@ -1,0 +1,53 @@
+{
+  "policies": [
+    {
+      "hash": "spend-v1",
+      "ref": {
+        "namespace": "startup-ops/prod",
+        "decision_type": "spend_approval",
+        "version": "1.0.0"
+      },
+      "policy": {
+        "policy_id": "spend-policy-v1",
+        "namespace": "startup-ops/prod",
+        "decision_type": "spend_approval",
+        "input_schema": {
+          "expense_amount": { "kind": "int" },
+          "category": { "kind": "int" },
+          "monthly_budget_remaining": { "kind": "int" }
+        },
+        "rules": [
+          {
+            "id": "over_budget",
+            "when": {
+              "field": "expense_amount",
+              "op": ">",
+              "value": 10000
+            },
+            "then": {
+              "outcome": "ESCALATE",
+              "reason": "Expense over $10,000 requires founder approval"
+            }
+          },
+          {
+            "id": "marketing_medium",
+            "when": {
+              "all": [
+                { "field": "category", "op": "==", "value": 2 },
+                { "field": "expense_amount", "op": ">", "value": 5000 }
+              ]
+            },
+            "then": {
+              "outcome": "ESCALATE",
+              "reason": "Marketing spend over $5,000 requires founder review"
+            }
+          }
+        ],
+        "default": {
+          "outcome": "APPROVE",
+          "reason": "Expense is within budget and policy limits"
+        }
+      }
+    }
+  ]
+}
